@@ -3,9 +3,9 @@ from flask_restful import Api
 from flask_jwt import JWT
 
 from database import Database
-from project.security import authenticate, identity
-from project.user import UserRegister
-from project.item import Item, ItemList
+from security import authenticate, identity
+from resources.user import UserRegister
+from resources.item import Item, ItemList
 
 Database('data.db')
 
