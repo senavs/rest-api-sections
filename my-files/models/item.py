@@ -1,7 +1,14 @@
 import sqlite3
 
+from database import db
 
-class ItemModel:
+
+class ItemModel(db.Model):
+    __tablename__ = 'items'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80))
+    price = db.Column(db.Float(precision=2))
 
     def __init__(self, name, price):
         self.name = name
@@ -11,31 +18,17 @@ class ItemModel:
         return {'name': self.name, 'price': self.price}
 
     @classmethod
-    def find_by_name(cls, name):
-        connection = sqlite3.connect('data.db')
-        cursor = connection.cursor()
-        result = cursor.execute('SELECT name, price FROM items WHERE name=?', (name,))
-        result = result.fetchone()
+    def find_by_name(cls, name) -> 'ItemModel':
+        # SELECT * FROM __tablename__ WHERE name=name LIMIT 1
+        return cls.query.filter_by(name=name).first()
 
-        if result:
-            return cls(*result)
+    def save_to_db(self):
+        # INSERT INTO __tablename__ VALUES (NULL, ?, ?)
+        # UPDATE __tablename__ SET price=? WHERE name=?
+        db.session.add(self)
+        db.session.commit()
 
-    def insert(self):
-        connection = sqlite3.connect('data.db')
-        cursor = connection.cursor()
-
-        query = "INSERT INTO items VALUES(NULL, ?, ?)"
-        cursor.execute(query, (self.name, self.price))
-
-        connection.commit()
-        connection.close()
-
-    def update(self):
-        connection = sqlite3.connect('data.db')
-        cursor = connection.cursor()
-
-        query = "UPDATE items SET price=? WHERE name=?"
-        cursor.execute(query, (self.price, self.name))
-
-        connection.commit()
-        connection.close()
+    def delete_from_db(self):
+        # DELETE FROM items WHERE name=?
+        db.session.delete(self)
+        db.session.commit()

@@ -1,7 +1,9 @@
 import sqlite3
 
+from flask_sqlalchemy import SQLAlchemy
 
-class Database:
+
+class InitDatabase:
 
     def __init__(self, database: str):
         self.connection = sqlite3.connect(database)
@@ -18,5 +20,4 @@ class Database:
             self.connection.close()
 
 
-if __name__ == '__main__':
-    Database('data.db')
+db = SQLAlchemy()
