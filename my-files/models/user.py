@@ -15,8 +15,15 @@ class UserModel(db.Model):
         self.username = username
         self.password = password
 
+    def json(self):
+        return {'id': int(self.id), 'username': self.username}
+
     def save_to_db(self):
         db.session.add(self)
+        db.session.commit()
+
+    def delete_from_db(self):
+        db.session.delete(self)
         db.session.commit()
 
     @classmethod
@@ -25,6 +32,6 @@ class UserModel(db.Model):
         return cls.query.filter_by(username=username).first()
 
     @classmethod
-    def find_by_id(cls, _id: str):
+    def find_by_id(cls, _id: str) -> Union['UserModel', None]:
         # SELECT * FROM users WHERE id=?
         return cls.query.filter_by(id=_id).first()

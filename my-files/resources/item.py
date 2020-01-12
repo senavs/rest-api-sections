@@ -1,7 +1,9 @@
 import sqlite3
 
 from flask_restful import Resource, reqparse
-from flask_jwt import jwt_required
+from flask_jwt_extended import (jwt_required, jwt_optional,
+                                get_jwt_claims, get_jwt_identity,
+                                fresh_jwt_required)
 
 from models.item import ItemModel
 
@@ -18,7 +20,7 @@ class Item(Resource):
     name_parser = reqparse.RequestParser()
     name_parser.add_argument('name', type=str, required=True, help='This field cannot be left blank!')
 
-    @jwt_required()
+    @jwt_required
     def get(self):
         data = self.name_parser.parse_args()
 
@@ -28,7 +30,7 @@ class Item(Resource):
             return item.json()
         return {'message': 'Item not found'}, 404
 
-    @jwt_required()
+    @fresh_jwt_required
     def post(self):
         data = self.parser.parse_args()
 
@@ -44,7 +46,7 @@ class Item(Resource):
 
         return item.json(), 201
 
-    @jwt_required()
+    @jwt_required
     def put(self):
         data = self.parser.parse_args()
 
@@ -59,8 +61,12 @@ class Item(Resource):
 
         return updated_item.json()
 
-    @jwt_required()
+    @jwt_required
     def delete(self):
+        claims = get_jwt_claims()
+        if not claims['is_admin']:
+            return {'message': 'Admin privilege required'}, 401
+
         data = self.name_parser.parse_args()
 
         item = ItemModel.find_by_name(data['name'])
@@ -71,5 +77,12 @@ class Item(Resource):
 
 class ItemList(Resource):
 
+    @jwt_optional
     def get(self):
-        return {'items': [item.json() for item in ItemModel.find_all()]}
+        user_id = get_jwt_identity()
+        items = [item.json() for item in ItemModel.find_all()]
+
+        if user_id:
+            return {'items': items}
+        return {'items': [item['name'] for item in items],
+                'message': 'More data available if you log in'}
