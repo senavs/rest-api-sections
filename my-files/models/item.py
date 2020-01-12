@@ -1,4 +1,4 @@
-import sqlite3
+from typing import List
 
 from database import db
 
@@ -21,6 +21,11 @@ class ItemModel(db.Model):
     def find_by_name(cls, name) -> 'ItemModel':
         # SELECT * FROM __tablename__ WHERE name=name LIMIT 1
         return cls.query.filter_by(name=name).first()
+
+    @classmethod
+    def find_all(cls) -> List['ItemModel']:
+        # SELECT * FROM __tablename__
+        return cls.query.all()
 
     def save_to_db(self):
         # INSERT INTO __tablename__ VALUES (NULL, ?, ?)

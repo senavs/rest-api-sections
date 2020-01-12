@@ -69,4 +69,6 @@ class Item(Resource):
 
 
 class ItemList(Resource):
-    pass
+
+    def get(self):
+        return {'items': [item.json() for item in ItemModel.find_all()]}
