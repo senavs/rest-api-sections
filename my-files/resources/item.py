@@ -10,6 +10,7 @@ class Item(Resource):
     parser = reqparse.RequestParser()
     parser.add_argument('price', type=float, required=True, help='This field cannot be left blank!')
     parser.add_argument('name', type=str, required=True, help='This field cannot be left blank!')
+    parser.add_argument('store_id', type=int, required=True, help='Every item has to be a store ID!')
 
     price_parser = reqparse.RequestParser()
     price_parser.add_argument('price', type=float, required=True, help='This field cannot be left blank!')
@@ -44,15 +45,6 @@ class Item(Resource):
         return item.json(), 201
 
     @jwt_required()
-    def delete(self):
-        data = self.name_parser.parse_args()
-
-        item = ItemModel.find_by_name(data['name'])
-        if item:
-            item.delete_from_db()
-        return {'message': 'Item deleted'}
-
-    @jwt_required()
     def put(self):
         data = self.parser.parse_args()
 
@@ -66,6 +58,15 @@ class Item(Resource):
         item.save_to_db()
 
         return updated_item.json()
+
+    @jwt_required()
+    def delete(self):
+        data = self.name_parser.parse_args()
+
+        item = ItemModel.find_by_name(data['name'])
+        if item:
+            item.delete_from_db()
+        return {'message': 'Item deleted'}
 
 
 class ItemList(Resource):
